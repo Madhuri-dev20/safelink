@@ -111,11 +111,14 @@ def call_bedrock(prompt: str) -> str:
 
 # ===== Tools =====
 def severity_tool(message: str) -> str:
-    prompt = f"Classify the severity of this incident in ONE word (High, Medium, Low) ONLY: {message}"
+    prompt = f"You are an AI that classifies Firstnet incident severity. Analyze the incident details and respond with **only one word**: Low, Medium, High, or Critical. No explanations."
     return call_bedrock(prompt)
 
 def summarization_tool(message: str) -> str:
-    prompt = f"Summarize this incident in ONE short sentence, concise for responders: {message}"
+    prompt = f"You are an AI assistant helping Firstnet responders. Read the incident details below and generate a clear, concise summarysuitable for a responder.
+    Inclde only the key facts: what happened, where, who is affected, and urgency. Do not include unrelated information.
+    Incident Details {message}
+    "
     return call_bedrock(prompt)
 
 def citizen_guidance_tool(message: str) -> str:
@@ -135,14 +138,15 @@ def handle_incident(report: IncidentReport):
     if not sos_steps:
         sos_steps = "I am uncertain about the SOS steps. Please call 911"
 
-    prompt = build_prompt(incident_text=report.message, category=category, sop_steps=sos_steps)
+    #prompt = build_prompt(incident_text=report.message, category=category, sop_steps=sos_steps)
 
-    guidance = call_bedrock(prompt)
+    #guidance = call_bedrock(prompt)
 
     incident = {
+        "incident":report.message,
         "severity": severity,
         "responder_summary": summary,
-        "citizen_guidance": guidance
+        "citizen_guidance": sos_steps
     }
     INCIDENT_QUEUE.append(incident)
     logger.info("Incident processed and added to queue: %s", incident)
@@ -166,14 +170,12 @@ def build_prompt(incident_text: str, category: str, sop_steps: list) -> str:
     prompt = f"""
     You are a FirstNet public safety assistant.
     Do NOT invent new steps. Use only the SOP steps provided below.
-
-    Incident: "{incident_text}"
-    Category: {category}
-
-    SOP Steps:
-    {sop_text}
-
-    Format the response as a checklist for the responder.
+    The incident has already been classified with the category : {category}.
+    Using this category, provide:
+    
+    Respond in **JSON format** like this:
+    {"category":{category},
+     "guidance": {sop_text}}
     """
     return prompt
 
