@@ -35,9 +35,9 @@ export default function Citizen() {
           <h3>Citizen Guidance</h3>
           <p>{response.citizen_guidance}</p>
 
-          <h3>Responder Summary</h3>
+          <!--<h3>Responder Summary</h3>
           <p><b>Severity:</b> {response.severity}</p>
-          <p>{response.responder_summary}</p>
+          <p>{response.responder_summary}</p>-->
         </div>
       )}
     </div>
